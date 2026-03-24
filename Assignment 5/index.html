@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Student Manager</h1>
+            <p>Manage grades and calculate averages effortlessly.</p>
+        </header>
+
+        <main>
+            <section class="add-student-section glass-panel">
+                <h2>Add New Student</h2>
+                <form id="student-form">
+                    <div class="form-group">
+                        <label for="student-name">Student Name</label>
+                        <input type="text" id="student-name" placeholder="E.g. Jane Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Marks (enter up to 5 subjects)</label>
+                        <div class="marks-inputs">
+                            <input type="number" class="mark-input" min="0" max="100" placeholder="Sub 1" required>
+                            <input type="number" class="mark-input" min="0" max="100" placeholder="Sub 2">
+                            <input type="number" class="mark-input" min="0" max="100" placeholder="Sub 3">
+                            <input type="number" class="mark-input" min="0" max="100" placeholder="Sub 4">
+                            <input type="number" class="mark-input" min="0" max="100" placeholder="Sub 5">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Student</button>
+                </form>
+            </section>
+
+            <section class="students-list-section glass-panel">
+                <div class="list-header">
+                    <h2>Student Records</h2>
+                    <div class="stats">
+                        <span id="total-students">Total Students: 0</span>
+                        <span id="class-average">Class Average: 0.00</span>
+                    </div>
+                </div>
+                
+                <div class="table-container hidden" id="table-container">
+                    <table id="students-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Marks</th>
+                                <th>Average</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-tbody">
+                            <!-- Student rows will be injected here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <p>No students added yet. Add a student to see their records.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

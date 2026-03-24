@@ -1,0 +1,81 @@
+.folder-tree-root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: #e2e8f0;
+  background-color: #1e1e2e; /* Darker modern background */
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Subtle glass/elevation effect */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tree-node {
+  margin: 4px 0;
+}
+
+.node-content {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Hover effects to make it clearly interactive */
+.node-content:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(2px); /* Slight bump to right on hover */
+}
+
+.node-content.file:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* Lighter hover for files */
+}
+
+/* Icons */
+.node-icon {
+  margin-right: 10px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.node-content.file .node-name {
+  color: #a6accd; /* Muted color for files */
+  font-weight: 400;
+}
+
+.node-content.folder .node-name {
+  color: #cba6f7; /* Vibrant accent color for folders */
+}
+
+/* Indentation for children */
+.tree-children {
+  margin-left: 20px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1); /* Left border guide line */
+  animation: slideDown 0.3s ease-out forwards;
+  transform-origin: top;
+}
+
+/* Micro animation for expanding folders */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
