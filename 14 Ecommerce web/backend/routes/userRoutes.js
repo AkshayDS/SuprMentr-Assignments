@@ -16,7 +16,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import protect from '../middleware/authMiddleware.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -52,6 +52,7 @@ router.post('/register', async (req, res) => {
       email: user.email,
       address: user.address,
       phone: user.phone,
+      isAdmin: user.isAdmin,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -80,6 +81,7 @@ router.post('/login', async (req, res) => {
         email: user.email,
         address: user.address,
         phone: user.phone,
+        isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
     } else {
@@ -108,6 +110,7 @@ router.get('/profile', protect, async (req, res) => {
         email: user.email,
         address: user.address,
         phone: user.phone,
+        isAdmin: user.isAdmin,
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -145,6 +148,7 @@ router.put('/profile', protect, async (req, res) => {
         email: updatedUser.email,
         address: updatedUser.address,
         phone: updatedUser.phone,
+        isAdmin: updatedUser.isAdmin,
         token: generateToken(updatedUser._id), // Return fresh token
       });
     } else {

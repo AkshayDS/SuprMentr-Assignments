@@ -1,169 +1,147 @@
 // ============================================================
-// pages/Profile.jsx — Protected User Profile Page
+// pages/Profile.jsx — Animated User Profile 
 // ============================================================
-// This page is only accessible when the user is logged in.
-// It fetches the user's data from AuthContext and displays
-// an editable form for name, address, and phone number.
-//
-// HOW THE PROTECTED ROUTE WORKS:
-// 1. The useAuth() hook provides the current user and token.
-// 2. If no user is logged in, we redirect to /login.
-// 3. The updateProfile() function sends the updated data to
-//    PUT /api/users/profile with the JWT in the header.
-// ============================================================
-
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
+const pageVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
+};
 
 const Profile = () => {
-  const { user, loading, updateProfile, logout } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
+    if (!user) {
       navigate("/login");
-    }
-  }, [user, loading, navigate]);
-
-  // Populate form with user data
-  useEffect(() => {
-    if (user) {
+    } else {
       setName(user.name || "");
       setEmail(user.email || "");
-      setAddress(user.address || "");
-      setPhone(user.phone || "");
     }
-  }, [user]);
+  }, [user, navigate]);
 
-  const handleUpdate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
-    setSaving(true);
+    setLoading(true);
 
     try {
-      await updateProfile({ name, address, phone });
+      await updateProfile(name, email, password);
       setMessage("Profile updated successfully!");
+      setPassword(""); // Clear password field
     } catch (err) {
       setError(err.message);
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/login");
   };
-
-  if (loading) {
-    return (
-      <div className="profile-page">
-        <p style={{ textAlign: "center", padding: "4rem" }}>Loading...</p>
-      </div>
-    );
-  }
 
   if (!user) return null;
 
   return (
-    <div className="profile-page">
-      <div className="profile-container">
-        {/* Profile Header */}
-        <div className="profile-header">
-          <div className="profile-avatar">
-            {user.name?.charAt(0)?.toUpperCase() || "U"}
+    <div className="min-h-[80vh] py-12 px-4 sm:px-6 lg:px-8 bg-offwhite">
+      <motion.div variants={pageVariants} initial="hidden" animate="visible" exit="exit" className="max-w-2xl mx-auto">
+        
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-accent text-white rounded-2xl flex items-center justify-center text-2xl font-black shadow-lg shadow-accent/20">
+              {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">My Profile</h1>
+              <p className="text-slate-500 font-medium">Manage your account details</p>
+            </div>
           </div>
-          <div>
-            <h1>{user.name}</h1>
-            <p className="profile-email">{user.email}</p>
-          </div>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-danger bg-danger-light/30 border border-danger-light rounded-xl hover:bg-danger hover:text-white transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
         </div>
 
-        {/* Status Messages */}
-        {message && <div className="auth-success">{message}</div>}
-        {error && <div className="auth-error">{error}</div>}
+        <div className="bg-white rounded-3xl shadow-card border border-slate-200/60 p-8 sm:p-10">
+          
+          {message && (
+            <div className="mb-6 p-4 rounded-xl bg-accent-50 border border-accent-100 text-accent-dark flex items-start gap-3">
+              <svg className="w-5 h-5 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <p className="text-sm font-medium">{message}</p>
+            </div>
+          )}
 
-        {/* Profile Form */}
-        <form onSubmit={handleUpdate} className="profile-form">
-          <h2>Account Details</h2>
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-danger-light/50 border border-danger-light text-danger flex items-start gap-3">
+              <svg className="w-5 h-5 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          )}
 
-          <div className="form-group">
-            <label htmlFor="profileName">Full Name</label>
-            <input
-              id="profileName"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all"
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="profileEmail">Email Address</label>
-            <input
-              id="profileEmail"
-              type="email"
-              value={email}
-              disabled
-              className="input-disabled"
-            />
-            <small className="form-hint">Email cannot be changed</small>
-          </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">New Password <span className="text-slate-400 font-normal ml-1">(leave blank to keep current)</span></label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none transition-all"
+              />
+            </div>
 
-          <h2>Shipping Information</h2>
-
-          <div className="form-group">
-            <label htmlFor="profileAddress">Shipping Address</label>
-            <textarea
-              id="profileAddress"
-              placeholder="123 Main St, City, State, ZIP"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="profilePhone">Phone Number</label>
-            <input
-              id="profilePhone"
-              type="tel"
-              placeholder="+1 (555) 000-0000"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
-
-          <div className="profile-actions">
-            <button
-              type="submit"
-              className="btn btn-primary btn-lg"
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline btn-lg"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          </div>
-        </form>
-      </div>
+            <div className="pt-4">
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto px-8 py-3.5 bg-slate-900 border border-slate-800 text-white font-bold rounded-xl shadow-lg hover:bg-slate-800 transition-all disabled:opacity-70 flex justify-center items-center"
+              >
+                {loading ? (
+                  <><svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Updating...</>
+                ) : "Save Changes"}
+              </motion.button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
     </div>
   );
 };

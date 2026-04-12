@@ -1,226 +1,204 @@
 // ============================================================
-// pages/ProductListing.jsx
+// pages/ProductListing.jsx — Staggered Grid + Filters
 // ============================================================
-// Displays all products in a responsive grid with:
-//   - Search bar to filter by product name
-//   - Category filter tabs
-//   - Price range slider
-//   - Sort dropdown
-// Each card is a <Link> that navigates to /product/:id.
+// Framer Motion: staggered product card entrance, animated
+//   filter panel, hover lift on cards.
 // ============================================================
 
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import products from "../data/products";
 
+const pageVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+};
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+};
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
+
 const ProductListing = () => {
-  // Filter & search state
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [maxPrice, setMaxPrice] = useState(20000);
   const [sortBy, setSortBy] = useState("default");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Get unique categories from data
   const categories = ["All", ...new Set(products.map((p) => p.category))];
 
-  // Filter + search + sort products (memoized for performance)
   const filteredProducts = useMemo(() => {
     let result = products;
-
-    // Category filter
-    if (selectedCategory !== "All") {
-      result = result.filter((p) => p.category === selectedCategory);
-    }
-
-    // Search filter (case-insensitive match on name or description)
+    if (selectedCategory !== "All") result = result.filter((p) => p.category === selectedCategory);
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          p.description.toLowerCase().includes(term)
-      );
+      result = result.filter((p) => p.name.toLowerCase().includes(term) || p.description.toLowerCase().includes(term));
     }
-
-    // Price filter
     result = result.filter((p) => p.price <= maxPrice);
-
-    // Sort
     switch (sortBy) {
-      case "price-low":
-        result = [...result].sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        result = [...result].sort((a, b) => b.price - a.price);
-        break;
-      case "name-az":
-        result = [...result].sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      default:
-        break;
+      case "price-low": result = [...result].sort((a, b) => a.price - b.price); break;
+      case "price-high": result = [...result].sort((a, b) => b.price - a.price); break;
+      case "name-az": result = [...result].sort((a, b) => a.name.localeCompare(b.name)); break;
+      default: break;
     }
-
     return result;
   }, [selectedCategory, searchTerm, maxPrice, sortBy]);
 
-  // Reset all filters
-  const resetFilters = () => {
-    setSelectedCategory("All");
-    setSearchTerm("");
-    setMaxPrice(20000);
-    setSortBy("default");
-  };
+  const resetFilters = () => { setSelectedCategory("All"); setSearchTerm(""); setMaxPrice(20000); setSortBy("default"); };
 
   return (
-    <div className="listing-page">
-      <div className="listing-header">
-        <h1>All Products</h1>
-        <p className="listing-subtitle">
-          Browse our complete collection of premium sports gear
-        </p>
+    <motion.div variants={pageVariants} initial="hidden" animate="visible" exit="exit" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">All Products</h1>
+        <p className="text-slate-500 mt-2">Browse our complete collection of premium sports gear</p>
       </div>
 
-      {/* ---- SEARCH BAR ---- */}
-      <div className="search-bar-container">
-        <div className="search-bar">
-          <svg className="search-bar-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      {/* Search + Filter Toggle */}
+      <div className="flex gap-3 mb-6 max-w-2xl mx-auto">
+        <div className="flex-1 relative">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
             type="text"
-            placeholder="Search for rackets, shoes, accessories..."
+            placeholder="Search rackets, shoes, accessories..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-11 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
           />
           {searchTerm && (
-            <button className="search-clear" onClick={() => setSearchTerm("")}>✕</button>
+            <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-lg">✕</button>
           )}
         </div>
-        <button
-          className={`filter-toggle-btn ${showFilters ? "filter-active" : ""}`}
+        <motion.button
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowFilters(!showFilters)}
+          className={`px-4 py-3 rounded-xl border text-sm font-medium flex items-center gap-2 transition-colors ${showFilters ? "bg-accent text-white border-accent" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="4" y1="21" x2="4" y2="14"></line>
-            <line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line>
-            <line x1="20" y1="12" x2="20" y2="3"></line>
-            <line x1="1" y1="14" x2="7" y2="14"></line>
-            <line x1="9" y1="8" x2="15" y2="8"></line>
-            <line x1="17" y1="16" x2="23" y2="16"></line>
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+            <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
           </svg>
           Filters
-        </button>
+        </motion.button>
       </div>
 
-      {/* ---- FILTER PANEL (collapsible) ---- */}
-      {showFilters && (
-        <div className="filter-panel">
-          <div className="filter-group-inline">
-            <div className="filter-item">
-              <label>Max Price: <span className="price-highlight">₹{maxPrice}</span></label>
-              <input
-                type="range"
-                min="0"
-                max="20000"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="price-slider"
-              />
-              <div className="slider-labels">
-                <span>₹0</span>
-                <span>₹20000</span>
+      {/* Filter Panel */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-wrap gap-6 items-end max-w-2xl mx-auto">
+              <div className="flex-1 min-w-[180px]">
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Max Price: <span className="text-accent font-bold">₹{maxPrice}</span></label>
+                <input type="range" min="0" max="20000" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full" />
+                <div className="flex justify-between text-[11px] text-slate-400 mt-1"><span>₹0</span><span>₹20000</span></div>
               </div>
-            </div>
-            <div className="filter-item">
-              <label>Sort By</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="sort-select"
-              >
-                <option value="default">Default</option>
-                <option value="price-low">Price: Low → High</option>
-                <option value="price-high">Price: High → Low</option>
-                <option value="name-az">Name: A → Z</option>
-              </select>
-            </div>
-            <div className="filter-item">
-              <button className="reset-filters-btn" onClick={resetFilters}>
+              <div className="min-w-[140px]">
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Sort By</label>
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-accent/30">
+                  <option value="default">Default</option>
+                  <option value="price-low">Price: Low → High</option>
+                  <option value="price-high">Price: High → Low</option>
+                  <option value="name-az">Name: A → Z</option>
+                </select>
+              </div>
+              <motion.button whileTap={{ scale: 0.95 }} onClick={resetFilters} className="px-4 py-2.5 text-sm font-semibold text-danger bg-danger-light rounded-lg hover:bg-danger/10 transition-colors">
                 Reset All
-              </button>
+              </motion.button>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ---- CATEGORY TABS ---- */}
-      <div className="category-tabs">
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2 justify-center mb-8">
         {categories.map((cat) => (
-          <button
+          <motion.button
             key={cat}
-            className={`tab-btn ${selectedCategory === cat ? "tab-active" : ""}`}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 ${
+              selectedCategory === cat
+                ? "bg-accent text-white shadow-sm"
+                : "bg-white text-slate-600 border border-slate-200 hover:border-accent/40 hover:text-accent"
+            }`}
           >
             {cat}
-          </button>
+          </motion.button>
         ))}
       </div>
 
-      {/* ---- RESULTS COUNT ---- */}
-      <div className="results-info">
-        <span>Showing {filteredProducts.length} of {products.length} products</span>
-      </div>
+      {/* Results Count */}
+      <p className="text-sm text-slate-500 mb-6 text-center">
+        Showing {filteredProducts.length} of {products.length} products
+      </p>
 
-      {/* ---- PRODUCT GRID ---- */}
+      {/* Product Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="empty-results">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{color: 'var(--text-muted)'}}>
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            <line x1="8" y1="11" x2="14" y2="11"></line>
+        <div className="text-center py-20">
+          <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>
           </svg>
-          <h3>No products found</h3>
-          <p>Try adjusting your search or filters.</p>
-          <button className="btn btn-primary" onClick={resetFilters}>Clear Filters</button>
+          <h3 className="text-xl font-bold text-slate-700 mb-2">No products found</h3>
+          <p className="text-slate-500 mb-5">Try adjusting your search or filters.</p>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={resetFilters} className="px-6 py-3 bg-accent text-white font-semibold rounded-xl hover:bg-accent-dark transition-colors">
+            Clear Filters
+          </motion.button>
         </div>
       ) : (
-        <div className="product-grid">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
           {filteredProducts.map((product) => (
-            <Link
-              to={`/product/${product.id}`}
-              key={product.id}
-              className="product-card"
-            >
-              <div className="img-container">
-                <img src={product.image} alt={product.name} loading="lazy" />
-                {!product.inStock && (
-                  <span className="badge oos-badge">Out of Stock</span>
-                )}
-                {product.featured && product.inStock && (
-                  <span className="badge hot-badge">Featured</span>
-                )}
-              </div>
-              <div className="card-content">
-                <span className="product-category">{product.category}</span>
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-desc">{product.description}</p>
-                <div className="card-footer">
-                  <span className="product-price">
-                    ₹{product.price.toFixed(2)}
-                  </span>
-                  <span className="view-link">View →</span>
-                </div>
-              </div>
-            </Link>
+            <motion.div key={product.id} variants={cardVariants}>
+              <Link to={`/product/${product.id}`}>
+                <motion.div
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300 group h-full flex flex-col"
+                >
+                  <div className="relative aspect-square bg-slate-50 overflow-hidden">
+                    <img src={product.image} alt={product.name} loading="lazy" className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300" />
+                    {!product.inStock && (
+                      <span className="absolute top-3 left-3 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg">Out of Stock</span>
+                    )}
+                    {product.featured && product.inStock && (
+                      <span className="absolute top-3 left-3 bg-accent text-white text-[11px] font-bold px-2.5 py-1 rounded-lg">Featured</span>
+                    )}
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <span className="text-[11px] font-semibold text-accent uppercase tracking-widest">{product.category}</span>
+                    <h3 className="text-base font-bold text-slate-900 mt-1 line-clamp-1">{product.name}</h3>
+                    <p className="text-sm text-slate-500 mt-1 line-clamp-2 flex-1">{product.description}</p>
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                      <span className="text-lg font-black text-slate-900">₹{product.price.toFixed(2)}</span>
+                      <span className="text-sm text-accent font-semibold group-hover:translate-x-1 transition-transform duration-200">View →</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

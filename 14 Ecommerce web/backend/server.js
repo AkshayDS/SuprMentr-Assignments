@@ -13,6 +13,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import Product from './models/Product.js';
 import userRoutes from './routes/userRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
 
 // Load environment variables BEFORE anything else
 dotenv.config();
@@ -31,6 +32,9 @@ app.use(express.json()); // Parse JSON request bodies
 
 // Mount user auth routes at /api/users
 app.use('/api/users', userRoutes);
+
+// Mount order routes at /api/orders
+app.use('/api/orders', orderRoutes);
 
 // @route   GET /api/products
 // @desc    Get products with optional filtering
