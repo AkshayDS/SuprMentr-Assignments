@@ -28,6 +28,7 @@ const PORT = process.env.PORT || 18451;
 // Allow requests from the deployed Vercel frontend (set FRONTEND_URL in Render env vars)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  'https://supr-mentr-assignments.vercel.app',
   'http://localhost:5173',
 ].filter(Boolean);
 
