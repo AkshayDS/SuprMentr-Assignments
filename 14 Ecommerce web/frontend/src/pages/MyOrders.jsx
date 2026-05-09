@@ -5,8 +5,9 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
+import BASE_URL from "../config/api";
 
-const API_URL = "http://localhost:18451/api/orders/myorders";
+const API_URL = `${BASE_URL}/api/orders/myorders`;
 
 const pageVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -34,7 +35,7 @@ const MyOrders = () => {
   const handleDeliver = async (orderId) => {
     setDeliveringId(orderId);
     try {
-      const res = await fetch(`http://localhost:18451/api/orders/${orderId}/deliver`, {
+      const res = await fetch(`${BASE_URL}/api/orders/${orderId}/deliver`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
       });

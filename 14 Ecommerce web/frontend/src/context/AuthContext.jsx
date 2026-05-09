@@ -22,11 +22,12 @@
 // ============================================================
 
 import { createContext, useContext, useState, useEffect } from "react";
+import BASE_URL from "../config/api";
 
 const AuthContext = createContext();
 
 // ---- Base URL for all API calls ----
-const API_URL = "http://localhost:18451/api/users";
+const API_URL = `${BASE_URL}/api/users`;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

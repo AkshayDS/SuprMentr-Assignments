@@ -5,8 +5,9 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
+import BASE_URL from "../config/api";
 
-const API_URL = "http://localhost:18451/api/orders";
+const API_URL = `${BASE_URL}/api/orders`;
 
 const pageVariants = {
   hidden: { opacity: 0 },

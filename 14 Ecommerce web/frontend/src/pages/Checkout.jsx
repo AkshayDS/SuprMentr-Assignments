@@ -6,8 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import BASE_URL from "../config/api";
 
-const API_URL = "http://localhost:18451/api/orders";
+const API_URL = `${BASE_URL}/api/orders`;
 
 const pageVariants = {
   hidden: { opacity: 0, y: 20 },

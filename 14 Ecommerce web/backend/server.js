@@ -25,7 +25,23 @@ const app = express();
 const PORT = process.env.PORT || 18451;
 
 // Middleware
-app.use(cors());
+// Allow requests from the deployed Vercel frontend (set FRONTEND_URL in Render env vars)
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json()); // Parse JSON request bodies
 
 // ---- ROUTES ----
